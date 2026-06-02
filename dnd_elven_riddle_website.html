@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Runic Riddle</title>
+  <style>
+    :root {
+      --bg: #0b0f14;
+      --panel: #111823;
+      --panel-2: #162030;
+      --text: #e8eef7;
+      --muted: #9fb0c5;
+      --accent: #7ee0b8;
+      --accent-2: #f0c674;
+      --danger: #ff7a7a;
+      --tile: #1b2637;
+      --tile-border: #2b3b53;
+      --good: #85f0a8;
+      --shadow: 0 18px 50px rgba(0, 0, 0, 0.35);
+      --radius: 22px;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      background:
+        radial-gradient(circle at top, rgba(126,224,184,0.10), transparent 30%),
+        radial-gradient(circle at bottom right, rgba(240,198,116,0.08), transparent 35%),
+        var(--bg);
+      color: var(--text);
+      display: grid;
+      place-items: center;
+      padding: 24px;
+    }
+
+    .app {
+      width: min(1100px, 100%);
+      background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02));
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    header {
+      padding: 28px 24px 18px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.05), transparent);
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      font-size: clamp(1.5rem, 3vw, 2.3rem);
+      letter-spacing: 0.02em;
+    }
+
+    .subtitle {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.5;
+      max-width: 75ch;
+    }
+
+    .content {
+      display: grid;
+      gap: 18px;
+      grid-template-columns: 1.2fr 0.8fr;
+      padding: 20px;
+    }
+
+    @media (max-width: 900px) {
+      .content { grid-template-columns: 1fr; }
+    }
+
+    .card {
+      background: rgba(17, 24, 35, 0.84);
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 18px;
+      padding: 18px;
+    }
+
+    .status {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      align-items: center;
+      flex-wrap: wrap;
+      margin-bottom: 16px;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 14px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+
+    .wordbox {
+      background: linear-gradient(180deg, rgba(126,224,184,0.08), rgba(255,255,255,0.02));
+      border: 1px solid rgba(126,224,184,0.18);
+      border-radius: 16px;
+      padding: 18px;
+      margin-bottom: 16px;
+    }
+
+    .label {
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+      font-size: 0.75rem;
+      color: var(--accent-2);
+      margin-bottom: 8px;
+    }
+
+    .answer {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      min-height: 58px;
+      align-items: center;
+    }
+
+    .slot {
+      min-width: 42px;
+      height: 50px;
+      padding: 0 12px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 12px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.08);
+      font-size: 1.2rem;
+      color: var(--text);
+      font-family: "Noto Sans", "Segoe UI Symbol", "DejaVu Sans", sans-serif;
+    }
+
+    .slot.empty {
+      color: rgba(232, 238, 247, 0.20);
+    }
+
+    .message {
+      min-height: 24px;
+      margin-top: 12px;
+      color: var(--muted);
+    }
+
+    .message.good { color: var(--good); }
+    .message.bad { color: var(--danger); }
+
+    .toolbar {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 16px;
+    }
+
+    button.action {
+      appearance: none;
+      border: 0;
+      border-radius: 14px;
+      padding: 11px 16px;
+      font-weight: 700;
+      cursor: pointer;
+      color: #071117;
+      background: linear-gradient(180deg, #95ffd0, #64d8ab);
+      box-shadow: 0 10px 24px rgba(100, 216, 171, 0.20);
+    }
+
+    button.action.secondary {
+      color: var(--text);
+      background: linear-gradient(180deg, rgba(255,255,255,0.07), rgba(255,255,255,0.03));
+      border: 1px solid rgba(255,255,255,0.10);
+      box-shadow: none;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(10, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    @media (max-width: 900px) {
+      .grid { grid-template-columns: repeat(8, minmax(0, 1fr)); }
+    }
+
+    @media (max-width: 600px) {
+      .grid { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+    }
+
+    .tile {
+      aspect-ratio: 1 / 1;
+      border-radius: 14px;
+      border: 1px solid var(--tile-border);
+      background: linear-gradient(180deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02));
+      color: var(--text);
+      cursor: pointer;
+      font-size: 1.2rem;
+      font-family: "Noto Sans", "Segoe UI Symbol", "DejaVu Sans", sans-serif;
+      display: grid;
+      place-items: center;
+      transition: transform 0.12s ease, border-color 0.12s ease, background 0.12s ease;
+      user-select: none;
+    }
+
+    .tile:hover { transform: translateY(-2px); border-color: rgba(126,224,184,0.45); }
+    .tile:active { transform: translateY(0px) scale(0.98); }
+    .tile.used {
+      opacity: 0.38;
+      pointer-events: none;
+      background: rgba(126,224,184,0.08);
+      border-color: rgba(126,224,184,0.20);
+    }
+
+    .footer-note {
+      color: var(--muted);
+      font-size: 0.92rem;
+      margin-top: 12px;
+      line-height: 1.5;
+    }
+
+    .success {
+      outline: 2px solid rgba(126,224,184,0.5);
+      box-shadow: 0 0 0 6px rgba(126,224,184,0.08);
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header>
+      <h1>Runic Riddle of Úamdir</h1>
+      <p class="subtitle">
+        Click the glyphs in the correct order to spell the hidden word. Correct letters stay locked in place.
+        Wrong choices do not break the letters already solved.
+      </p>
+    </header>
+
+    <div class="content">
+      <section class="card">
+        <div class="status">
+          <div class="pill">Progress: <strong id="progressText">0 / 6</strong></div>
+          <div class="pill">Target word: <strong>úamdir</strong></div>
+        </div>
+
+        <div class="wordbox">
+          <div class="label">Your answer</div>
+          <div class="answer" id="answerRow"></div>
+          <div id="message" class="message">Choose the first glyph to begin.</div>
+        </div>
+
+        <div class="toolbar">
+          <button class="action" id="resetBtn">Reset</button>
+          <button class="action secondary" id="shuffleBtn">Re-shuffle tiles</button>
+        </div>
+
+        <div class="footer-note">
+          This is set up as a simple browser puzzle you can host and share in Discord. You can replace the target word or glyph set anytime.
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="status" style="margin-bottom: 12px;">
+          <div class="pill">100 selectable glyphs</div>
+          <div class="pill">Shuffled each round</div>
+        </div>
+        <div class="grid" id="tileGrid"></div>
+      </section>
+    </div>
+  </div>
+
+  <script>
+    // Rune-like Unicode characters inspired by Tolkien-style alphabets.
+    // These are a mixed glyph set for puzzle play, not a scholarly transcription system.
+    const target = ["ú", "a", "m", "d", "i", "r"];
+
+    // Chosen glyphs for the hidden word (kept consistent each round).
+    const targetGlyphs = ["ᚢ", "ᚨ", "ᛗ", "ᛞ", "ᛁ", "ᚱ"];
+
+    // A pool of rune-like and Tengwar-like symbols to build the 100-tile jumble.
+    const glyphPool = [
+      "ᚠ","ᚢ","ᚦ","ᚨ","ᚱ","ᚲ","ᚷ","ᚹ","ᚺ","ᚾ",
+      "ᛁ","ᛃ","ᛇ","ᛈ","ᛉ","ᛋ","ᛏ","ᛒ","ᛖ","ᛗ",
+      "ᛚ","ᛜ","ᛝ","ᛟ","ᛞ","ᚪ","ᚫ","ᚣ","ᛠ","ᚸ",
+      "ᚻ","ᛣ","ᛤ","ᛥ","ᛦ","ᛧ","ᛨ","ᛩ","ᛪ","᛫",
+      "𐱅","𐰀","𐰆","𐰇","𐰉","𐰣","𐰼","𐰾","𐰴","𐰢",
+      "ᚠ","ᚢ","ᚦ","ᚨ","ᚱ","ᚲ","ᚷ","ᚹ","ᚺ","ᚾ",
+      "ᛁ","ᛃ","ᛇ","ᛈ","ᛉ","ᛋ","ᛏ","ᛒ","ᛖ","ᛗ",
+      "ᛚ","ᛜ","ᛝ","ᛟ","ᛞ","ᚪ","ᚫ","ᚣ","ᛠ","ᚸ",
+      "ᚻ","ᛣ","ᛤ","ᛥ","ᛦ","ᛧ","ᛨ","ᛩ","ᛪ","᛫"
+    ];
+
+    const grid = document.getElementById('tileGrid');
+    const answerRow = document.getElementById('answerRow');
+    const message = document.getElementById('message');
+    const progressText = document.getElementById('progressText');
+    const resetBtn = document.getElementById('resetBtn');
+    const shuffleBtn = document.getElementById('shuffleBtn');
+
+    let progress = 0;
+    let usedTiles = new Set();
+    let tiles = [];
+
+    function shuffle(array) {
+      const copy = [...array];
+      for (let i = copy.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [copy[i], copy[j]] = [copy[j], copy[i]];
+      }
+      return copy;
+    }
+
+    function renderAnswer() {
+      answerRow.innerHTML = '';
+      for (let i = 0; i < targetGlyphs.length; i++) {
+        const span = document.createElement('span');
+        span.className = 'slot' + (i < progress ? '' : ' empty');
+        span.textContent = i < progress ? targetGlyphs[i] : '—';
+        answerRow.appendChild(span);
+      }
+      progressText.textContent = `${progress} / ${targetGlyphs.length}`;
+
+      if (progress === targetGlyphs.length) {
+        message.textContent = 'Solved. The chamber opens.';
+        message.className = 'message good';
+      }
+    }
+
+    function setMessage(text, type = '') {
+      message.textContent = text;
+      message.className = 'message' + (type ? ` ${type}` : '');
+    }
+
+    function buildTiles() {
+      grid.innerHTML = '';
+      usedTiles = new Set();
+      tiles = shuffle([...glyphPool]).slice(0, 100);
+      const solved = targetGlyphs.map((glyph, index) => ({ glyph, index }));
+
+      // Ensure the target glyphs are present in the 100 tiles.
+      for (let i = 0; i < solved.length; i++) {
+        tiles[i] = solved[i].glyph;
+      }
+
+      // Shuffle again so the target glyphs are not clustered at the top.
+      tiles = shuffle(tiles);
+
+      tiles.forEach((glyph, index) => {
+        const btn = document.createElement('button');
+        btn.className = 'tile';
+        btn.type = 'button';
+        btn.textContent = glyph;
+        btn.setAttribute('aria-label', `Glyph ${glyph}`);
+        btn.addEventListener('click', () => handlePick(btn, glyph));
+        grid.appendChild(btn);
+      });
+    }
+
+    function handlePick(btn, glyph) {
+      if (progress >= targetGlyphs.length) return;
+
+      const expected = targetGlyphs[progress];
+      if (glyph === expected) {
+        progress += 1;
+        btn.classList.add('used');
+        usedTiles.add(btn);
+        setMessage(`Correct. ${progress === targetGlyphs.length ? 'The word is complete.' : 'Keep going.'}`, 'good');
+        renderAnswer();
+        return;
+      }
+
+      // Wrong glyphs do not remove the solved prefix.
+      setMessage('That glyph does not belong there.', 'bad');
+      btn.animate(
+        [
+          { transform: 'translateX(0px)' },
+          { transform: 'translateX(-3px)' },
+          { transform: 'translateX(3px)' },
+          { transform: 'translateX(0px)' }
+        ],
+        { duration: 180 }
+      );
+    }
+
+    function resetPuzzle(rebuild = false) {
+      progress = 0;
+      setMessage('Puzzle reset. Begin again.', '');
+      renderAnswer();
+      if (rebuild) buildTiles();
+    }
+
+    resetBtn.addEventListener('click', () => resetPuzzle(false));
+    shuffleBtn.addEventListener('click', () => {
+      buildTiles();
+      resetPuzzle(false);
+    });
+
+    buildTiles();
+    renderAnswer();
+  </script>
+</body>
+</html>
